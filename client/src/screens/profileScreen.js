@@ -12,11 +12,22 @@ import {
 
 import SecureLS from "secure-ls";
 import jwtDecode from 'jwt-decode';
+import QRCode from "qrcode.react";
+// import speakeasy from "speakeasy";
 
 const ls = new SecureLS({ encodingType: 'aes', isCompression: false });
 
+
+
 const {TabPane} = Tabs;
 function ProfileScreen() {
+
+  const [secret, setSecret] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [isVerified, setIsVerified] = useState();
+  const [userToken, setUserToken] = useState("");
+  const [resp, setResp] = useState({})
+  const[now, setNow] = useState(false)
 
   var decoded = {}
   const token = ls.get('token')
@@ -31,6 +42,36 @@ useEffect(() => {
 }, [])
 
 
+const handleVerify = async () => {
+  const response = await axios.post("/api/users/verify-token", {
+    token: userToken,
+    userid : decoded.userid
+  });
+  setIsVerified(response.data.isVerified);
+  setNow(true)
+  console.log(isVerified)
+};
+
+const handleEnable = async () => {
+  try {
+    const userid = decoded.userid
+
+
+    const response = await axios.get("/api/users/generate-secret", {params: {
+      userid : userid
+    }
+    });
+    console.log(response.data.qrCodeBase64)
+    setResp(response.data.qrCodeBase64)
+    setSecret(true)
+  
+  } catch (error) {
+    console.log(error)
+  }
+};
+
+
+
   return (
     <div className='ml-3 mt-3'>
       <Tabs defaultActiveKey='1'>
@@ -42,6 +83,30 @@ useEffect(() => {
             <h1>Name: {decoded.name}</h1>
             {/* <h1>Email: {d.email}</h1> */}
             <h1>isAdmin : {decoded.isAdmin == "YES" ? 'YES' : 'NO'}</h1>
+
+            <div>
+              {(secret && !isVerified) && (
+                <div>
+                  <img src={resp} alt="QR code" />
+                  <br></br>
+                  <label>
+                    Enter 2FA Token:
+                    <input
+                      type="text"
+                      name="token"
+                      value={userToken}
+                      onChange={(event) => setUserToken(event.target.value)}
+                    />
+                  </label>
+                  <button onClick={handleVerify}>Verify</button>
+                  {isVerified && <p>Token is valid</p>}
+                </div>
+              )} 
+                {!isVerified && <button onClick={handleEnable}>Enable 2FA</button>}
+                {now && <p>Please logout and login to make changes</p>}
+            </div>
+
+            
 
         </TabPane>
         <TabPane tab="Bookings" key = "2">

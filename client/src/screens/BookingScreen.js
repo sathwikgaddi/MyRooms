@@ -25,6 +25,14 @@ function BookingScreen({match}) {
     const [totalAmount, setTotalAmount] = useState()
     const [userid, setUserId] = useState('')
     const [name, setName] = useState('')
+    const [sQuestion, setSQuestion] = useState('')
+    const [sAnswer, setsAnswer] = useState('')
+    const [userSAnswer, setUserSAnswer] = useState('')
+    const [usersecured, setUserSecured] = useState(false)
+    const [isVerified, setIsVerified] = useState(false);
+    const [userToken, setUserToken] = useState("");
+    const [is2FA, setis2FA] = useState();
+    
   
     useEffect( () =>  {
 
@@ -34,6 +42,12 @@ function BookingScreen({match}) {
         
        setUserId(jwtDecode(token).userid)
        setName(jwtDecode(token).name)
+       setSQuestion(jwtDecode(token).sQuestion)
+       setsAnswer(jwtDecode(token).sAnswer)
+        setis2FA(jwtDecode(token).is2FA)
+        if(is2FA == false) {
+          isVerified = true
+        }
       }
       else {
         window.location.href = "/login"
@@ -85,9 +99,36 @@ function BookingScreen({match}) {
         Swal.fire("Oops", "Something went wrong", "error")
       }
     }
+
+    const handleSecurity = (event => {
+
+    setUserSAnswer()
+
+    if(sAnswer === event.target.value) {
+        setUserSecured(true)
+        setError(false)
+    }
+    else {
+      setUserSecured(false)
+      setError(true)
+    }
+
+  })
+
+  const handleVerify = async () => {
+    console.log(isVerified)
+    const response = await axios.post("/api/users/verify-token", {
+      token: userToken,
+      userid : userid
+    });
+    setIsVerified(response.data.isVerified);
+    console.log(isVerified)
+    console.log(isVerified)
+  };
     
   return (
     <div className='m-5'>
+      {error && <Error message="Invalid Security Answer"></Error>}
       {loading ? <h1><Loader></Loader></h1> : room ?   <div> 
         
           <div className='row justify-content-center mt-5 bs' >
@@ -120,6 +161,26 @@ function BookingScreen({match}) {
                 </b>
               </div>
 
+              <div style={{textAlign:'right'}}>
+                <b>
+                <hr></hr>
+                  {/* <p>Security Question: {sQuestion} </p>
+                  <input type="text" value = {userSAnswer} onChange = {handleSecurity}></input> */}
+                </b>
+              </div>
+                {is2FA &&
+              <div>
+                    Enter 2FA Token:
+                    <input
+                      type="text"
+                      name="token"
+                      value={userToken}
+                      onChange={(event) => setUserToken(event.target.value)}
+                    />
+                  <button onClick={handleVerify}>Verify</button>
+                </div>
+}
+
               <div style={{float: "right"}}>
                 
 
@@ -130,7 +191,7 @@ function BookingScreen({match}) {
                   stripeKey="pk_test_51MyGL1JEu8LiqnuffixE8R5alO1p8IBNOC4aGPIpBhmFfsx1SvGFiUxSdBzbZXnQkNTja53FCRsw3t8JCtBo9Kmx00Lh0DjbM8"
                 >
 
-                      <button className='btn btn-primary' >Pay Now</button>
+                      <button className='btn btn-primary' disabled={!isVerified}>Pay Now</button>
 
                 </StripeCheckout>
                 </div>

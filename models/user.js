@@ -6,7 +6,12 @@ const userSchema = mongoose.Schema({
     email: {type :String, required: true},
     password: {type :String, required: true},
     isAdmin: {type :String, default: "No"},
-    verified: { type: String, default: "No" }
+    verified: { type: String, default: "No" },
+    verificationToken: {type: String},
+    sQuestion: {type: String, required: true},
+    sAnswer: {type: String, required: true},
+    twoFA: {type: Object},
+    is2FA: {type: Boolean, required: true, default: false}
 
 }, {
     timestamps : true,

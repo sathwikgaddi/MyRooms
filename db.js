@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 
 var mongoURL = "mongodb://localhost:27017/mern-rooms"
 
+// 
+
 mongoose.connect(mongoURL)
 
 var connection = mongoose.connection

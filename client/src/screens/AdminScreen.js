@@ -3,11 +3,30 @@ import {Tabs} from 'antd'
 import axios from 'axios'
 import Loader from '../components/Loader';
 import Swal from 'sweetalert2'
+import SecureLS from "secure-ls";
+import jwtDecode from 'jwt-decode';
 const {TabPane} = Tabs;
-
+const ls = new SecureLS({ encodingType: 'aes', isCompression: false });
 
 
 function AdminScreen() {
+
+    useEffect( () =>  {
+
+        console.log("nooooooooooooooooo4")
+        const token = ls.get('token')
+        if(token) {
+          console.group(typeof jwtDecode(token).isAdmin)
+         if(jwtDecode(token).isAdmin === "No") {
+            console.log("noooo")
+            window.location.href = "/home"
+         }
+         
+        }
+       
+    }, [])
+
+
   return (
     <div className='mt-3 ml-3 mr-3 bs'>
       <h1 className='text-center' ><b>Admin Panel</b></h1>
